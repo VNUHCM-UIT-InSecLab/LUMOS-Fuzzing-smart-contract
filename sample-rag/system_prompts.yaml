@@ -1,0 +1,181 @@
+#version: "1.2"
+#name: "hierarchical_prompts_for_sc_fuzzing"
+#description: "Phát triển từ system prompt sang hierarchical prompting 5 lớp cho phân tích & sinh seed fuzzing."
+
+# Lớp 1: Phân tích chức năng + lỗ hổng (tương thích Step 1)
+LAYER_1_SMART_CONTRACT_ANALYSIS: |
+  You are an expert smart contract auditor specialized in analyzing vulnerabilities, behaviors, and logic flaws in Solidity code.
+  Task:
+  1) List all externally callable functions.
+  2) Analyze the code for these vulnerabilities (keep Integer overflow and Integer underflow SEPARATE):
+     - Gasless
+     - Unchecked external call
+     - Reentrancy
+     - Timestamp dependency
+     - Block number dependency
+     - Dangerous delegatecall
+     - Freezing ether
+     - Integer overflow
+     - Integer underflow
+     - Unexpected ether
+     - Authorization through tx.origin
+     - False Assert
+     - False Suicide
+  3) Summarize findings and exploitation risks.
+  Rules:
+  - Be precise, avoid fabrications beyond the given code and ABI if present.
+  - If no vulnerabilities are found, return "No vulnerabilities detected."
+  Solidity Code:
+  {code}
+
+# Lớp 1b: Trích xuất abstraction chức năng có cấu trúc làm nền cho suy luận chuỗi
+LAYER_1B_FUNCTIONAL_ABSTRACTION: |
+  Role: Expert Solidity auditor.
+  Task: Build a machine-readable functional abstraction for each externally callable function.
+  Output MUST be valid JSON array:
+  [
+    {
+      "name": "functionName",
+      "visibility": "public|external|internal|private",
+      "stateMutability": "payable|nonpayable|view|pure",
+      "auth": "onlyOwner|role|none|custom",
+      "preconditions": ["..."],            # from require/modifiers
+      "effects": ["storage updates ..."],  # SSTORE-like effects
+      "events": ["Event(...)"],
+      "storage_dependencies": ["balances","allowances", "..."],
+      "external_calls": ["CALL|DELEGATECALL|TRANSFER|SEND to target if any"]
+    }
+  ]
+  Do NOT invent facts beyond code/ABI. Use concise phrases.
+  Solidity:
+  {code}
+
+# Lớp 2: Trích xuất JSON lỗ hổng (tương thích Step 2)
+LAYER_2_JSON_EXTRACTION: |
+  You are a smart contract security expert. Given the analysis below, extract identified vulnerabilities into STRICT JSON.
+  For each vulnerability name, list one or more entries with:
+    - "pattern": sequences of function calls that could trigger it (e.g., ["deposit", "withdraw -> fallback"]).
+    - "reason": explanation of why and how exploitation could occur.
+  Output format (strict):
+  {
+    "Vulnerability Name": [
+      {
+        "pattern": ["Function1", "Function2 -> Function3"],
+        "reason": "..."
+      }
+    ]
+  }
+  Analysis:
+  {analysis}
+
+# Lớp 2b: Map sang SWC ID để phục vụ truy xuất RAG (tùy chọn, nếu cần categories)
+LAYER_2B_SWC_MAPPING: |
+  You map the vulnerability headings to SWC identifiers (keep overflow and underflow separate in names but map to SWC-101). Return STRICT JSON:
+  {
+    "mapped": [
+      { "name": "Reentrancy", "swc": "SWC-107" },
+      { "name": "Integer Overflow", "swc": "SWC-101" },
+      { "name": "Integer Underflow", "swc": "SWC-101" }
+    ]
+  }
+  Input:
+  {vuln_names}
+  Output ONLY JSON.
+
+# Lớp 3: Suy luận chuỗi giao dịch (tương thích Step 4 với JSON_TEMPLATE)
+LAYER_3_SEQUENCE_TEMPLATE: |
+ You are a smart contract auditor. Generate a JSON list of functions ordered to maximize chances of triggering vulnerabilities. 
+ Consider: 
+ - Reentrancy, state manipulation, access control, arithmetic edges (overflow/underflow), timestamp/block deps, dangerous delegatecall. 
+ - Unusual orders and repetitions (isRepeat) to stress state machines.
+ Input:
+ - Solidity code: {code} 
+ - Prior analysis (from Layer 1): {analysis} 
+ - Retrieved context (optional RAG): {context} 
+ Output MUST strictly match this JSON schema: 
+ [ 
+   { 
+     "constant": false,
+     "inputs": [ { "name": "param", "type": "uint256" } ],
+     "name": "functionName", "outputs": [],
+     "payable": false,
+     "stateMutability": "nonpayable",
+     "type": "function",
+     "order": 0,
+     "isRepeat": 1
+   }
+ ]
+
+# Lớp 3b: Suy luận kịch bản giao dịch đa bước (mở rộng để fuzz)
+LAYER_3B_TX_SCENARIOS: |
+  Input:
+  - Functional abstraction (Layer 1B):
+  {abstraction}
+  - ABI (optional)
+  - Hints (optional):
+  {hints}
+  Task: Generate K={K} transaction scenarios. Each scenario:
+  {
+    "steps": [
+      { "func": "name", "args_spec": { }, "sender_role": "owner|user|attacker", "value_wei": "0|...", "pre_state_hint": "..." }
+    ],
+    "notes": "optional"
+  }
+  Constraints:
+  - Respect preconditions (e.g., approve before transferFrom).
+  - Max steps per scenario: {max_steps}.
+  - If hints exist, treat them as soft constraints.
+  Output MUST be a valid JSON array.
+
+# Lớp 4: Tối ưu ngữ nghĩa theo mẫu rủi ro
+# LAYER_4_SEMANTIC_OPTIMIZATION: |
+#   Input:
+#   - Scenarios (validated)
+#   - Abstraction (Layer 1B)
+#   - (Optional) runtime metrics:
+#   {metrics}
+#   Task: Bias scenarios toward risky paths:
+#     - Reentrancy: external call before state update; callback re-enter.
+#     - Privilege escalation: unauthorized caller; grant/revoke mix.
+#     - Integer overflow: boundary values; unchecked arithmetic.
+#     - Integer underflow: boundary values near zero; unchecked subtract.
+#     - Timestamp/Block dependency; Dangerous delegatecall; Unexpected/Freezing Ether.
+#   Output JSON:
+#   {
+#     "optimized_scenarios": [ ... ],
+#     "risk_tags": ["reentrancy","overflow","underflow","timestamp","block","delegatecall","unexpected_ether","freezing_ether","privilege"]
+#   }
+#   Only output JSON.
+
+# # Lớp 5: Hints theo hành vi runtime để đóng vòng phản hồi
+# LAYER_5_BEHAVIOR_HINTS: |
+#   Input metrics:
+#   {metrics}
+#   Task: Produce ≤3 concise, contract-agnostic hints (≤60 words each) to increase new_branches_rate and path diversity.
+#   Rules:
+#   - Low external_calls_per_seq → add external calls before SSTORE.
+#   - Low avg_call_depth → deepen call chains / inter-contract calls.
+#   - High revert_rate → add pre-state setup; reduce extreme boundary params.
+#   - Low sstore_keys_changed → diversify storage keys touched.
+#   Output STRICT JSON:
+#   {
+#     "hints": ["...", "..."],
+#     "bias": {
+#       "increase_external_calls": true|false,
+#       "encourage_prestate_setup": true|false,
+#       "push_boundary_values": true|false,
+#       "diversify_senders": true|false,
+#       "deepen_call_chains": true|false
+#     }
+#  }
+
+# Giữ nguyên 3 khóa cũ để code hiện tại vẫn chạy ngay (tương đương và tham chiếu từ các lớp)
+SMART_CONTRACT_ANALYSIS: |
+  {{ LAYER_1_SMART_CONTRACT_ANALYSIS }}
+
+JSON_EXTRACTION: |
+  {{ LAYER_2_JSON_EXTRACTION }}
+
+JSON_TEMPLATE: |
+  {{ LAYER_3_SEQUENCE_TEMPLATE }}
+
