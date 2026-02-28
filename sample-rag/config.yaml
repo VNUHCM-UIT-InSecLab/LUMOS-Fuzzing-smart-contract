@@ -1,0 +1,29 @@
+# ===== RAG Hyperparameters =====
+CONTEXT_VOLUME: 100  
+QUESTION_VS_CONTEXT_SIMILARITY_PERCENTILE_THRESHOLD: 75  
+QUESTION_VS_CONTEXT_MINIMUM_SIMILARITY: 0
+
+# ===== Embedding Models =====
+SENTENCE_EMBEDDING_MODEL_FOR_NODE_RETRIEVAL: 'sentence-transformers/all-MiniLM-L6-v2' 
+SENTENCE_EMBEDDING_MODEL_FOR_CONTEXT_RETRIEVAL: 'microsoft/codebert-base' 
+
+# ===== VectorDB =====
+VECTOR_DB_PATH: './data/vectorDB'  
+VECTOR_DB_SENTENCE_EMBEDDING_MODEL: 'sentence-transformers/all-MiniLM-L6-v2'  
+VECTOR_DB_CHUNK_SIZE : 650
+VECTOR_DB_CHUNK_OVERLAP : 200
+VECTOR_DB_BATCH_SIZE : 200
+
+# ===== Context file  =====
+CSV_PATH: './data/data_no_sol.csv' 
+
+# ===== LLaMA Model Info =====
+LLAMA_MODEL_NAME: 'meta-llama/Llama-2-7b-chat-hf'
+LLAMA_MODEL_BRANCH: 'main'
+
+# ===== HuggingFace Cache Path =====
+LLM_CACHE_DIR: './llm_cache' 
+LLM_TEMPERATURE: 0
+
+# ===== Where to Save Output =====
+SAVE_RESULTS_PATH: './RAG/output' 
