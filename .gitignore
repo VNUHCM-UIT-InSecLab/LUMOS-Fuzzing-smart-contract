@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Vector DB
+*.bin
+*.sqlite3
+*.pickle
+
+# Logs
+*.log
+debug_log.txt
+
+# Temp files
+.~lock.*
+*.bak
+*.bk
+
+# OS
+.DS_Store
+Thumbs.db
