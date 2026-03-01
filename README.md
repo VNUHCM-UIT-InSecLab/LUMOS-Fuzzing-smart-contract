@@ -1,15 +1,14 @@
-# MuFuzz
-
-MuFuzz: Sequence-Aware Mutation and Seed Mask Guidance for Blockchain Smart Contract Fuzzing
+# LUMOS-Fuzzing-smart-contract
+A code implementation of paper, entitled: "LUMOS: LLM-guided Stateful Fuzzing for Smart Contracts with Multi-Feedback and Dynamic Oracles"
 
 ## Requirements
 
-MuFuzz is executed on Linux (ideally Ubuntu 18.04).
+LUMOS is executed on Linux (ideally Ubuntu 18.04).
 
 Dependencies: 
 
 * [CMake](https://cmake.org/download/): >=[3.5.1](sFuzz/CMakeLists.txt#L5)
-* [Python](https://www.python.org/downloads/): >=3.5（ideally 3.6）
+* [Python](https://www.python.org/downloads/): >=3.9（ideally 3.9）
 * Go: 1.15
 * leveldb
 * [Geth & Tools](https://geth.ethereum.org/downloads/)
@@ -20,12 +19,17 @@ Dependencies:
 ## Architecture
 
 ```shell
-$(MuFuzz)
+$(LUMOS)
 ├── sFuzz
 │   ├── fuzzer
 │   ├── libfuzzer
 │   ├── liboracle
 │   └── ...
+├── sample_rag
+│   ├── RAG
+│   ├── data
+│   ├── config.yaml
+│   ├── system_prompts.yaml
 ├── bran
 │   └── ...
 ├── tools
@@ -49,9 +53,12 @@ $(MuFuzz)
 ├── initial_.sh
 ├── rename_src.sh
 ├── run.sh
+├── llm_oracle.py
+├── run_multi_order.sh
+├── json_to_csv.py
+├── LUMOS_run.sh
 └── README.md
 ```
-
 * `sFuzz`: The basic fuzzing module of MuFuzz
 * `bran`: The abstract interpreter for path analysis
 * `tools`: The static analysis tools for extracting vulnerability-specific patterns
@@ -66,20 +73,6 @@ $(MuFuzz)
 * `logs`: Store the execution report during fuzzing
 * `fuzz`: The complied executable fuzzer file (if you want to re-compile a fuzz file, you can refer to the following *complete execution*)
 
-
-## Quick Start
-
-Rename contract under test
-```
-./rename_src.sh
-```
-
-Execute the fuzzer
-```
-./run.sh
-```
-
-
 ## Complete Execution
 
 - Initialization and Install system dependencies (This step will consume a lot of time.)
@@ -88,29 +81,17 @@ Execute the fuzzer
 ./initial_.sh
 ```
 
-
 - Make workspace for the contract in directory `source_code` and `clean_source_code`
 
 ```bash
 ./rename_src.sh
 ```
 
-- Run MuFuzz
+- Run LUMOS
 
 ```bash
 ./run.sh
 ```
 
-- Note: if you download the boost version >= 1.7.0, you may need to update the ".get_io_service()" (in sFuzz/libp2p/RLPxHandshake.h) to ".get_executor()".
-
-
-### Parameters Illustration
-* -p: prefuzz (path searching)
-* -r: report
-* -d: duration (fuzzing time)
-* -m: mode (1: mask, 0: default) 
-* -o: order (1: new sequence, 0: default)
-
-
 ### Dataset
-We make all three datasets used in our paper publicly available. [Download](https://drive.google.com/file/d/1h_XYXcKqfKuN7ArsXDwFq52V_mH3GQ5w/view?usp=sharing)
+We publicly release all two datasets used in our experiments to support reproducibility. [Download](https://drive.google.com/drive/folders/1Qi6Lu4TYi6Lr8xJ8lbc6HOet_Tfn9rPz?usp=sharing)
