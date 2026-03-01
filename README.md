@@ -6,8 +6,6 @@ This repository provides the official implementation of the paper:
 
 LUMOS is a stateful smart contract fuzzing framework that integrates Large Language Models (LLMs), multi-feedback mechanisms, and dynamic semantic oracles to improve vulnerability detection in Ethereum smart contracts.
 
----
-
 ## 1. System Overview
 
 LUMOS extends traditional stateful fuzzing by incorporating:
@@ -18,8 +16,6 @@ LUMOS extends traditional stateful fuzzing by incorporating:
 - LLM-based dynamic vulnerability oracles  
 
 The framework builds upon MuFuzz and enhances it with semantic reasoning and vulnerability-aware exploration.
-
----
 
 ## 2. System Requirements
 
@@ -43,8 +39,6 @@ Additional Python dependencies are listed in:
 ```
 tools/requirements.txt
 ```
-
----
 
 ## 3. Repository Structure
 
@@ -75,8 +69,6 @@ LUMOS
 - **assets**: Templates for generating attacker contracts.  
 - **llm_oracle.py**: Semantic oracle for reasoning over execution traces.  
 
----
-
 ## 4. Google API Configuration
 
 The RAG and LLM-based oracle components require a valid `GOOGLE_API_KEY`.
@@ -105,15 +97,11 @@ Verify configuration:
 echo $GOOGLE_API_KEY
 ```
 
----
-
 ### 4.2 Temporary Setup (Current Session Only)
 
 ```bash
 export GOOGLE_API_KEY="your_api_key_here"
 ```
-
----
 
 ### Security Notice
 
@@ -130,7 +118,6 @@ import os
 api_key = os.getenv("GOOGLE_API_KEY")
 ```
 
----
 
 ## 5. Complete Execution Pipeline
 
@@ -143,7 +130,6 @@ api_key = os.getenv("GOOGLE_API_KEY")
 This step installs required dependencies and prepares the environment.  
 It may take significant time depending on your system and network speed.
 
----
 
 ### Step 2 — Workspace Preparation
 
@@ -156,7 +142,6 @@ This prepares working directories under:
 - `source_code/`
 - `clean_source_code/`
 
----
 
 ### Step 3 — Execute LUMOS
 
@@ -173,7 +158,6 @@ The system will:
 5. Trigger LLM-based dynamic oracle reasoning  
 6. Generate execution logs in `logs/`  
 
----
 
 ## 6. Dataset
 
@@ -185,24 +169,10 @@ The datasets include:
 - Vulnerability-labeled samples  
 - Evaluation contracts used in the paper  
 
-**Download link:**
-
-https://drive.google.com/drive/folders/1Qi6Lu4TYi6Lr8xJ8lbc6HOet_Tfn9rPz?usp=sharing
-
----
+**[Download](https://drive.google.com/drive/folders/1Qi6Lu4TYi6Lr8xJ8lbc6HOet_Tfn9rPz?usp=sharing)**
 
 ## 7. Reproducibility Notes
 
 - Ensure `solc` version is strictly **0.4.26**.  
 - Use Ubuntu 18.04 for consistent replication.  
 - Fuzzing and LLM inference introduce stochastic behavior; multiple runs are recommended for stable evaluation.
-
----
-
-## 8. Citation
-
-If you use LUMOS in your research, please cite:
-
-```
-(To be updated after publication)
-```
