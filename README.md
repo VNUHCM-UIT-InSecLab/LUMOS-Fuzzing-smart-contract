@@ -6,6 +6,8 @@ This repository provides the official implementation of the paper:
 
 LUMOS is a stateful smart contract fuzzing framework that integrates Large Language Models (LLMs), multi-feedback mechanisms, and dynamic semantic oracles to improve vulnerability detection in Ethereum smart contracts.
 
+---
+
 ## 1. System Overview
 
 LUMOS extends traditional stateful fuzzing by incorporating:
@@ -16,6 +18,8 @@ LUMOS extends traditional stateful fuzzing by incorporating:
 - LLM-based dynamic vulnerability oracles  
 
 The framework builds upon MuFuzz and enhances it with semantic reasoning and vulnerability-aware exploration.
+
+---
 
 ## 2. System Requirements
 
@@ -40,6 +44,8 @@ Additional Python dependencies are listed in:
 tools/requirements.txt
 ```
 
+---
+
 ## 3. Repository Structure
 
 ```
@@ -60,14 +66,7 @@ LUMOS
 └── README.md
 ```
 
-### Module Description
-
-- **sFuzz**: Core stateful fuzzing engine.  
-- **bran**: Static path abstraction and control-flow analysis.  
-- **sample_rag**: Retrieval-Augmented Generation module for semantic seed guidance.  
-- **tools**: Vulnerability pattern extraction and preprocessing utilities.  
-- **assets**: Templates for generating attacker contracts.  
-- **llm_oracle.py**: Semantic oracle for reasoning over execution traces.  
+---
 
 ## 4. Google API Configuration
 
@@ -75,7 +74,7 @@ The RAG and LLM-based oracle components require a valid `GOOGLE_API_KEY`.
 
 To make the API key accessible across both the root directory and the `sample_rag/` module, configure it as a global environment variable.
 
-### 4.1 Persistent Setup (Recommended)
+### Persistent Setup (Recommended)
 
 For **bash** users:
 
@@ -97,11 +96,15 @@ Verify configuration:
 echo $GOOGLE_API_KEY
 ```
 
-### 4.2 Temporary Setup (Current Session Only)
+---
+
+### Temporary Setup (Current Session Only)
 
 ```bash
 export GOOGLE_API_KEY="your_api_key_here"
 ```
+
+---
 
 ### Security Notice
 
@@ -118,8 +121,61 @@ import os
 api_key = os.getenv("GOOGLE_API_KEY")
 ```
 
+---
 
-## 5. Complete Execution Pipeline
+## 5. Required Path Configuration (Important)
+
+Two files contain hard-coded directory placeholders and must be updated before running LUMOS.
+
+---
+
+### 5.1 Update RAG Path in `Fuzzer.cpp`
+
+In `Fuzzer.cpp`, locate:
+
+```cpp
+std::string jsonFilePath = "DIR-TO-RAG" + fullName + ".json";
+```
+
+Replace `"DIR-TO-RAG"` with the correct path to your `sample_rag/contracts` directory.
+
+Recommended (if running from project root):
+
+```cpp
+std::string jsonFilePath = "./sample_rag/contracts/" + fullName + ".json";
+```
+
+---
+
+### 5.2 Update Root Path in `LlamaRAG.py`
+
+In:
+
+```
+sample_rag/RAG/rag_based_generation/LlamaRAG.py
+```
+
+Locate:
+
+```python
+if __name__ == "__main__":
+    ROOT_DIR = "YOUR_ROOT_DIR/clean_source_code"
+    run_hierarchical_pipeline(ROOT_DIR)
+```
+
+Replace `"YOUR_ROOT_DIR/clean_source_code"` with the correct path to your `clean_source_code` directory.
+
+Recommended (if running from project root):
+
+```python
+ROOT_DIR = "./clean_source_code"
+```
+
+Ensure both paths match your local project structure before execution.
+
+---
+
+## 6. Complete Execution Pipeline
 
 ### Step 1 — System Initialization
 
@@ -130,6 +186,7 @@ api_key = os.getenv("GOOGLE_API_KEY")
 This step installs required dependencies and prepares the environment.  
 It may take significant time depending on your system and network speed.
 
+---
 
 ### Step 2 — Workspace Preparation
 
@@ -142,6 +199,7 @@ This prepares working directories under:
 - `source_code/`
 - `clean_source_code/`
 
+---
 
 ### Step 3 — Execute LUMOS
 
@@ -158,8 +216,9 @@ The system will:
 5. Trigger LLM-based dynamic oracle reasoning  
 6. Generate execution logs in `logs/`  
 
+---
 
-## 6. Dataset
+## 7. Dataset
 
 To support reproducibility and transparency, we publicly release all datasets used in our experiments.
 
@@ -171,7 +230,9 @@ The datasets include:
 
 **[Download](https://drive.google.com/drive/folders/1Qi6Lu4TYi6Lr8xJ8lbc6HOet_Tfn9rPz?usp=sharing)**
 
-## 7. Reproducibility Notes
+---
+
+## 8. Reproducibility Notes
 
 - Ensure `solc` version is strictly **0.4.26**.  
 - Use Ubuntu 18.04 for consistent replication.  
