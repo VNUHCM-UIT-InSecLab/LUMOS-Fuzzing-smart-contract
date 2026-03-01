@@ -90,7 +90,7 @@ $(LUMOS)
 - Run LUMOS
 
 ```bash
-./run.sh
+./LUMOS_run.sh
 ```
 
 ### Dataset
