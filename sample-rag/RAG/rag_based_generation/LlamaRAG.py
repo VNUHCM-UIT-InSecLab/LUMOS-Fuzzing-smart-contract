@@ -499,5 +499,5 @@ def run_hierarchical_pipeline(root_dir: str):
 
 
 if __name__ == "__main__":
-    ROOT_DIR = "/home/nhnkhoa/CAYYYY/MuFuzz/clean_source_code"
+    ROOT_DIR = "YOUR_ROOT_DIR/clean_source_code"
     run_hierarchical_pipeline(ROOT_DIR)
